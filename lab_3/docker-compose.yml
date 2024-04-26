@@ -1,0 +1,20 @@
+version: '3.9'
+
+services:
+  app:
+    image: tokohsun/ntut-multiple-media-lab3:1.0
+    container_name: multimedia-lab-3
+    # command: /bin/bash
+    volumes:
+      - .:/home/node/app
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+    user: node
+    working_dir: /home/node/app
+    mem_limit: 1G
+    memswap_limit: 1G
+    stdin_open: true
+    tty: true
+    restart: unless-stopped

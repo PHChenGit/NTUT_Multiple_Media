@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>My Video</title>
+    <script src="https://cdn.dashjs.org/latest/dash.all.min.js"></script>
+    <script>
+        function init() {
+            var video, player, url = "toystory.mpd";
+
+            video = document.querySelector("video");
+            player = dashjs.MediaPlayer().create();
+            player.initialize(video, url, false);
+        } 
+    </script>
+</head>
+
+<body>
+  <br>
+  <video width="800px" height="600px" controls="true"></video>
+  <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            init();
+        });    
+  </script>
+</body>
+</html>

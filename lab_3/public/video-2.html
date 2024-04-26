@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>My Video</title>
+</head>
+<body>
+    <video width="800px" height="600px" controls="true"></video>
+    <script>
+        function downloadData(url, cb) {
+            console.log("Downloading " + url);        
+            var xhr = new XMLHttpRequest;
+            xhr.open('get', url);
+            xhr.responseType = 'arraybuffer';
+            xhr.onload = function () {
+                cb(new Uint8Array(xhr.response));
+            };
+            xhr.send();
+        }
+                
+        if (MediaSource.isTypeSupported('video/mp4; codecs="avc1.4d401e, mp4a.40.2"')) {
+            console.log("Codec supported");
+        }
+        
+        var segment_slice = 2; 
+        var videoSources = [
+            'toystory-seg-002.mp4',
+            'toystory-seg-001.mp4',
+            'toystory-seg-000.mp4'
+        ]
+        
+        var mediaSource = new MediaSource();       
+        
+        mediaSource.addEventListener('sourceopen', function(e) {       
+            var sourceBuffer = mediaSource.addSourceBuffer('video/mp4; codecs="avc1.4d401e, mp4a.40.2"');
+            sourceBuffer.mode = 'sequence';        
+            console.log('SourceBuffer mode set to ' + sourceBuffer.mode);
+        
+            sourceBuffer.addEventListener('updateend', function(e) {
+                console.log('Finished updating buffer');
+                console.log('New duration is ' + String(mediaSource.duration));
+
+                if (videoSources.length == 0) {
+                    mediaSource.endOfStream();
+                    return;
+                }
+            });
+            
+            downloadData(videoSources.pop(), function(arrayBuffer) {
+                console.log('Finished downloading buffer of size ' + String(arrayBuffer.length));
+                console.log('Updating buffer');
+                sourceBuffer.appendBuffer(arrayBuffer);
+            }); 
+            
+            video.addEventListener('timeupdate', fetchNextSegment);
+            
+            function fetchNextSegment() {
+                console.log("After playing %d seconds, then download the next segment!", mediaSource.duration*0.9);
+                if(video.currentTime > mediaSource.duration*0.9)
+                {
+                    downloadData(videoSources.pop(), function(arrayBuffer) {
+                        console.log('Finished downloading buffer of size ' + String(arrayBuffer.length));
+                        console.log('Updating buffer');
+                        sourceBuffer.appendBuffer(arrayBuffer);
+                    });
+                    console.log('New duration: ' + String(mediaSource.duration));
+                    
+                    if( videoSources.length == 0)
+                        video.removeEventListener('timeupdate', arguments.callee);
+                    else
+                        video.addEventListener('timeupdate', fetchNextSegment);
+                }
+            }
+        }, false);
+        
+        var video = document.querySelector('video');
+        video.src = window.URL.createObjectURL(mediaSource);
+    </script>  
+</body>
+</html>
